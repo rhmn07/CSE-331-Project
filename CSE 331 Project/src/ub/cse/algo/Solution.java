@@ -1,6 +1,8 @@
 package ub.cse.algo;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 public class Solution {
 
@@ -30,6 +32,9 @@ public class Solution {
     public SolutionObject outputPaths() {
         SolutionObject sol = new SolutionObject();
         /* TODO: Your solution goes here */
+        sol.bandwidths = this.bandwidths;
+        sol.paths = Traversals.bfsPaths(this.graph, this.clients);
+        sol.priorities = Traversals.bfs(this.graph, this.clients);
         return sol;
     }
 }
