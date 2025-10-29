@@ -30,6 +30,7 @@ public class Solution {
     public SolutionObject outputPaths() {
         SolutionObject sol = new SolutionObject();
         /* TODO: Your solution goes here */
+        sol.bandwidths = this.bandwidths;
         return sol;
     }
 }

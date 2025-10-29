@@ -13,38 +13,38 @@ public class Driver { // testing in process!
 
     public static void main(String[] args) {
         if (args.length != 1) {
-			System.out.println("Please provide the testcase filepath as a command line argument");
-			return;
-		}
-		Driver.filename= args[0];
-        
+            System.out.println("Please provide the testcase filepath as a command line argument");
+            return;
+        }
+        Driver.filename= args[0];
+
         MPUtility mpu = new MPUtility(Driver.problem);
         Graph graph = mpu.readFile(Driver.filename);
         Info info = mpu.readInfo(Driver.filename + "-info");
- 
+
         Solution student = new Solution(info);
-		SolutionObject solObj = student.outputPaths();
-		info.solutionObject = solObj;
-        
+        SolutionObject solObj = student.outputPaths();
+        info.solutionObject = solObj;
+
         if (solObj.bandwidths == null || solObj.bandwidths.isEmpty()) {
             solObj.bandwidths = info.bandwidths;
         }
 
         if(solObj == null){
-			System.out.println("null Solution Object returned");
-		} else if (solObj.paths == null) {
-			System.out.println("null paths returned");
-		} else if (solObj.paths.isEmpty()) {
-			System.out.println("Paths are empty");
-		} else {
-			float revenue = Driver.runHelper(info, solObj);
+            System.out.println("null Solution Object returned");
+        } else if (solObj.paths == null) {
+            System.out.println("null paths returned");
+        } else if (solObj.paths.isEmpty()) {
+            System.out.println("Paths are empty");
+        } else {
+            float revenue = Driver.runHelper(info, solObj);
 
-			System.out.println("Your Solution");
-			System.out.println("=============================================");
-			System.out.println("Revenue: " + revenue);
-		}
-	}
-	
+            System.out.println("Your Solution");
+            System.out.println("=============================================");
+            System.out.println("Revenue: " + revenue);
+        }
+    }
+
     /**
      * This helper method will run the solution throught the simulator
      * and return the revenue that the solution generates
