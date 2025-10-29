@@ -1,6 +1,7 @@
 package ub.cse.algo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Solution {
 
@@ -31,6 +32,17 @@ public class Solution {
         SolutionObject sol = new SolutionObject();
         /* TODO: Your solution goes here */
         sol.bandwidths = this.bandwidths;
+        sol.priorities = new HashMap<Integer, Integer>(this.graph.size());
+        for (int i = 0; i < this.graph.size(); i++) {
+            sol.priorities.put(i, 0);
+        }
+
+        HashMap<Integer, ArrayList<Integer>> shortestPath = Traversals.bfsPaths(this.graph, this.clients);
+
+
+        //System.out.println(sol.priorities);
+        //System.out.println(sol.bandwidths);
+        //System.out.println(sol.paths);
         return sol;
     }
 }
