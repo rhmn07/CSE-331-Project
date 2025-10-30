@@ -2,6 +2,7 @@ package ub.cse.algo;
 
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class Solution {
@@ -42,6 +43,9 @@ public class Solution {
         //System.out.println(this.clients);
         sol.paths = optimalPaths(this.clients);
 
+
+
+
         //System.out.println(sol.priorities);
         //System.out.println(sol.bandwidths);
         //System.out.println(sol.paths);
@@ -51,9 +55,26 @@ public class Solution {
     public HashMap<Integer, ArrayList<Integer>> optimalPaths(ArrayList<Client> clients) {
         HashMap<Integer, ArrayList<Integer>> pathList = new HashMap<>();
 
-        ArrayList<ArrayList<Client>> alphaSort = new ArrayList<>(); //2D ARRAY:
+
+        int maxAlpha = 0;
         for (Client client : clients) {
-            //ADD CLIENT TO IT'S PROPERLY INDEXED ALPHA ARRAY
+            if (!Float.isInfinite(client.alpha)) {
+                maxAlpha = Math.max(maxAlpha, (int) client.alpha);
+            }
+        }
+        ArrayList<ArrayList<Client>> alphaSort = new ArrayList<>();
+        for (int i = 0; i <= maxAlpha; i++) {
+            alphaSort.add(new ArrayList<>());
+        }
+        for (Client client : clients) {
+            int i = 0;
+            if (Float.isInfinite(client.alpha)) {
+                i = maxAlpha;
+            }
+            else{
+                i = (int)  client.alpha;
+            }
+            alphaSort.get(i).add(client);
         }
 
         for (int i = 0; i < alphaSort.size(); i++) {
