@@ -35,7 +35,7 @@ public class Solution {
         sol.bandwidths = this.bandwidths;
         sol.priorities = new HashMap<Integer, Integer>(this.graph.size());
         for (int i = 0; i < this.graph.size(); i++) {
-            sol.priorities.put(i, 0);
+            sol.priorities.put(i, this.clients.get(i).priority);
         }
         HashMap<Integer, ArrayList<Integer>> shortestPath = Traversals.bfsPaths(this.graph, this.clients);
 
@@ -50,7 +50,8 @@ public class Solution {
 
     public HashMap<Integer, ArrayList<Integer>> optimalPaths(ArrayList<Client> clients) {
         HashMap<Integer, ArrayList<Integer>> pathList = new HashMap<>();
-        ArrayList<ArrayList<Client>> alphaSort = new ArrayList<>();
+
+        ArrayList<ArrayList<Client>> alphaSort = new ArrayList<>(); //2D ARRAY:
         for (Client client : clients) {
             //ADD CLIENT TO IT'S PROPERLY INDEXED ALPHA ARRAY
         }
@@ -61,20 +62,21 @@ public class Solution {
 
 
         //PERFORM A BFS FOR PATH TO EACH NODE, KEEP TRACK OF BANDWIDTH OF EACH NODE, CANNOT USE IF MAX B > USED B
+
         return pathList;
     }
 
     public ArrayList<Client> sortClientsByAlpha(ArrayList<Client> clients) {
         ArrayList<Client> sortedClients = new ArrayList<>(clients);
         while (clients.size() > 1) {
-            Client min = clients.get(0);
+            Client max = clients.getFirst();
             for (int i = 1; i < clients.size() - 1; i++) {
-                if (min.payment > clients.get(i).payment) {
-                    min = clients.get(i);
+                if (max.payment < clients.get(i).payment) {
+                    max = clients.get(i);
                 }
             }
-            sortedClients.add(min);
-            clients.remove(min);
+            sortedClients.add(max);
+            clients.remove(max);
         }
         return sortedClients;
     }
