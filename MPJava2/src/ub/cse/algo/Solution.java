@@ -1,5 +1,6 @@
 package ub.cse.algo;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -36,13 +37,45 @@ public class Solution {
         for (int i = 0; i < this.graph.size(); i++) {
             sol.priorities.put(i, 0);
         }
-
         HashMap<Integer, ArrayList<Integer>> shortestPath = Traversals.bfsPaths(this.graph, this.clients);
 
+        //System.out.println(this.clients);
+        sol.paths = optimalPaths(this.clients);
 
         //System.out.println(sol.priorities);
         //System.out.println(sol.bandwidths);
         //System.out.println(sol.paths);
         return sol;
+    }
+
+    public HashMap<Integer, ArrayList<Integer>> optimalPaths(ArrayList<Client> clients) {
+        HashMap<Integer, ArrayList<Integer>> pathList = new HashMap<>();
+        ArrayList<ArrayList<Client>> alphaSort = new ArrayList<>();
+        for (Client client : clients) {
+            //ADD CLIENT TO IT'S PROPERLY INDEXED ALPHA ARRAY
+        }
+
+        for (int i = 0; i < alphaSort.size(); i++) {
+            alphaSort.set(i, sortClientsByAlpha(alphaSort.get(i)));
+        }
+
+
+        //PERFORM A BFS FOR PATH TO EACH NODE, KEEP TRACK OF BANDWIDTH OF EACH NODE, CANNOT USE IF MAX B > USED B
+        return pathList;
+    }
+
+    public ArrayList<Client> sortClientsByAlpha(ArrayList<Client> clients) {
+        ArrayList<Client> sortedClients = new ArrayList<>(clients);
+        while (clients.size() > 1) {
+            Client min = clients.get(0);
+            for (int i = 1; i < clients.size() - 1; i++) {
+                if (min.payment > clients.get(i).payment) {
+                    min = clients.get(i);
+                }
+            }
+            sortedClients.add(min);
+            clients.remove(min);
+        }
+        return sortedClients;
     }
 }
