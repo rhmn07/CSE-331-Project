@@ -34,7 +34,7 @@ public class Solution {
         /* TODO: Your solution goes here */
         sol.bandwidths = this.bandwidths;
         sol.priorities = new HashMap<Integer, Integer>(this.graph.size());
-        for (int i = 0; i < this.graph.size(); i++) {
+        for (int i = 0; i < this.clients.size(); i++) {
             sol.priorities.put(i, this.clients.get(i).priority);
         }
         HashMap<Integer, ArrayList<Integer>> shortestPath = Traversals.bfsPaths(this.graph, this.clients);
