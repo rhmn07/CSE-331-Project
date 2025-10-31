@@ -33,6 +33,8 @@ public class Solution {
         /* TODO: Your solution goes here */
         sol.bandwidths = this.bandwidths;
         sol.priorities = new HashMap<Integer, Integer>(this.graph.size());
+        System.out.println(bandwidths);
+        System.out.println(clients);
         for (int i = 0; i < this.clients.size(); i++) {
             sol.priorities.put(i, this.clients.get(i).priority);
         }
@@ -40,12 +42,12 @@ public class Solution {
 
         //System.out.println(this.clients);
         sol.paths = optimalPaths(this.clients);
-        //System.out.println(sol.paths);
+        System.out.println(sol.paths);
         return sol;
     }
 
     public HashMap<Integer, ArrayList<Integer>> optimalPaths(ArrayList<Client> clients) {
-        //START OF MAHIR'S SECTION
+        //START OF MAHIR'S SECTION -------------------------
         int maxAlpha = 0;
         for (Client client : clients) {
             if (!Float.isInfinite(client.alpha)) {
@@ -65,29 +67,57 @@ public class Solution {
             }
             alphaSort.get(i).add(client);
         }
-        // END OF SECTION
+        // END OF MAHIR'S SECTION --------------------
+        HashMap<Integer, Integer> optimality = Traversals.bfs(this.graph, this.clients);
         for (int i = 0; i < alphaSort.size(); i++) {
-            if (alphaSort.get(i).size() > 0) {
-                alphaSort.set(i, sortClientsByAlpha(alphaSort.get(i)));
+            if (!alphaSort.get(i).isEmpty()) {
+                alphaSort.set(i, sortClientsInAlpha(alphaSort.get(i), optimality));
             }
         }
         //PERFORM A BFS FOR PATH TO EACH NODE, KEEP TRACK OF BANDWIDTH OF EACH NODE, CANNOT USE IF MAX B > USED B
-
         return makePaths(alphaSort);
     }
 
-    public ArrayList<Client> sortClientsByAlpha(ArrayList<Client> clients) {
+    public ArrayList<Client> sortClientsInAlpha(ArrayList<Client> clients, HashMap<Integer, Integer> optimality) {
         ArrayList<Client> sortedClients = new ArrayList<>();
-        while (clients.size() > 1) {
-            Client max = clients.getFirst();
-            for (int i = 1; i < clients.size() - 1; i++) {
-                if (max.payment < clients.get(i).payment) {
-                    max = clients.get(i);
+        while (clients.size() > 0){
+            int min = -1;
+            Client minCli = null;
+            for (Client client : clients) {
+                if (min == -1) {
+                    min = client.id;
+                    minCli = client;
+                }
+                if (optimality.get(min) <= optimality.get(client.id)){
+                    if (optimality.get(min) < optimality.get(client.id)) {
+                        min = client.id;
+                        minCli = client;
+                    }
+                    else{
+                        if (minCli.payment < client.payment) {
+                            minCli = client;
+                            min = client.id;
+                        }
+
+                    }
                 }
             }
-            sortedClients.add(max);
-            clients.remove(max);
+            if (min != -1) {
+                sortedClients.add(minCli);
+                clients.remove(minCli);
+            }
         }
+//
+//       while (clients.size() > 0) {
+//            Client max = clients.getFirst();
+//            for (int i = 1; i < clients.size() - 1; i++) {
+//                if (max.payment < clients.get(i).payment) {
+//                    max = clients.get(i);
+//                }
+//            }
+//            sortedClients.add(max);
+//            clients.remove(max);
+//        }
         return sortedClients;
     }
 
@@ -113,6 +143,7 @@ public class Solution {
                 priors.put(graph.contentProvider, -1);
                 boolean found = false;
 
+                //SINGLE NODE BFS (HEAVILY BASED OFF OF Traversals.bfsPaths())
                 while (!searchQueue.isEmpty() && !found) {
                     int node = searchQueue.poll();
                     for (int neighbor : graph.get(node)) {
@@ -126,20 +157,19 @@ public class Solution {
                         }
                     }
                 }
-
+                //BACKPATH GENERATOR
+                ArrayList<Integer> clientPath = new ArrayList<>();
                 if (found) {
-                    ArrayList<Integer> clientPath = new ArrayList<>();
                     Integer current = client.id;
-                    while (!current.equals(null) && current != -1) {
+                    while (current != -1) {
                         clientPath.add(0, current);
                         current = priors.get(current);
                     }
                     for (int c : clientPath) {
                         currBans.replace(c, currBans.get(c) + 1);
                     }
-                    pathList.put(client.id, clientPath);
-                    //OTHERWISE, WE DITCH THIS CLIENT
                 }
+                pathList.put(client.id, clientPath);
             }
         }
         return pathList;
