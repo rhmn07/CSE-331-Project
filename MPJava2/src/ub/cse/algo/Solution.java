@@ -74,54 +74,75 @@ public class Solution {
     }
 
     public HashMap<Integer, ArrayList<Integer>> makePaths(ArrayList<Client> sortedClients) {
-        HashMap<Integer, ArrayList<Integer>> pathList = new HashMap<>();
-        HashMap<Integer, Integer> currBans = new HashMap<>();
-        //IDK another way to get all the keys, I don't know Java very well - Kyler
-        Set<Integer> keys = this.graph.keySet();
-        for (Integer key : keys) {
-            currBans.put(key, 0);
+        HashMap<Integer, ArrayList<Integer>> shortestPaths = new HashMap<>();
+        HashMap<Integer, ArrayList<Integer>> usages = new HashMap<>();
+
+        for (Client client : sortedClients) {
+            ArrayList<Integer> path = onePath(client, usages);
+            shortestPaths.put(client.id, path);
+            usages.put(client.id, path);
+            //System.out.println(sortedClients.size() - shortestPaths.size());
         }
-        //REWORKED TRAVERSALS BFS FOR ONLY ONE CLIENT & ACCOUNTING FOR BANDWIDTHS
-        for (int i = 0; i < sortedClients.size(); i++) {
-                Client client = sortedClients.get(i);
+        return shortestPaths;
+    }
 
-                Queue<Integer> searchQueue = new LinkedList<>();
-                HashMap<Integer, Integer> priors = new HashMap<>();
-                searchQueue.add(graph.contentProvider);
-                priors.put(graph.contentProvider, -1);
-                boolean found = false;
+    public class PriorityItem implements Comparable<PriorityItem> {
+        int priority;
+        int id;
+        public PriorityItem(int id, int priority) {
+            this.id = id;
+            this.priority = priority;
+        }
 
-                //SINGLE NODE BFS (HEAVILY BASED OFF OF Traversals.bfsPaths())
-                while (!searchQueue.isEmpty() && !found) {
-                    int node = searchQueue.poll();
-                    for (int neighbor : graph.get(node)) {
-                        if (!priors.containsKey(neighbor) && currBans.get(neighbor) < this.bandwidths.get(neighbor)) {
-                            priors.put(neighbor, node);
-                            searchQueue.add(neighbor);
-                            if (neighbor == client.id) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                //BACKPATH GENERATOR
-                ArrayList<Integer> clientPath = new ArrayList<>();
-                if (found) {
-                    System.out.println(client.alpha);
-                    System.out.println(client.payment);
-                    System.out.println("-----------");
-                    Integer current = client.id;
-                    while (current != -1) {
-                        clientPath.addFirst(current);
-                        current = priors.get(current);
-                    }
-                    for (int c : clientPath) {
-                        currBans.replace(c, currBans.get(c) + 1);
-                    }
-                }
-                pathList.put(client.id, clientPath);
+        @Override
+        public int compareTo(PriorityItem o) {
+            if (this.priority > o.priority) {
+                return 1;
             }
-        return pathList;
+            return 0;
+        }
+
+    }
+
+    //GIVEN: A CLIENT & PRIOR CLIENTS' USED NODES
+    //RETURN: THE BFS FOR THIS CLIENT
+    public ArrayList<Integer> onePath(Client client, HashMap<Integer, ArrayList<Integer>> usages){
+        Queue<PriorityItem> searchQueue = new PriorityQueue<>();
+        HashMap<Integer, Integer> priors = new HashMap<>();
+        searchQueue.add(new PriorityItem(graph.contentProvider, 0));
+        priors.put(graph.contentProvider, -1);
+        boolean found = false;
+        while (searchQueue.size() > 0 && !found) {
+            PriorityItem item = searchQueue.poll();
+            int node = item.id;
+            for (int neighbor : this.graph.get(node)){
+                int nCount = 0;
+                for (ArrayList<Integer> list : usages.values()) {
+                    if (list.size() > item.priority && list.get(item.priority) == neighbor){
+                        nCount++;
+                    }
+                }
+                if (nCount < this.bandwidths.get(neighbor) && !priors.containsKey(neighbor)) {
+                    priors.put(neighbor, node);
+                    searchQueue.add(new PriorityItem(neighbor, item.priority+1));
+                }
+                if (neighbor == client.id){
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+
+        //BACKPATH GENERATOR
+        ArrayList<Integer> clientPath = new ArrayList<>();
+        if (found) {
+            int current = client.id;
+            while (current != -1) {
+                clientPath.add(0, current);
+                current = priors.get(current);
+            }
+        }
+        return clientPath;
     }
 }
