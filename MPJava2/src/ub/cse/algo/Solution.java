@@ -39,7 +39,7 @@ public class Solution {
         HashMap<Integer, ArrayList<Integer>> shortestPath = Traversals.bfsPaths(this.graph, this.clients);
 
         sol.paths = optimalPaths(this.clients);
-        System.out.println(sol.paths);
+        //System.out.println(sol.paths);
         return sol;
     }
 
@@ -48,39 +48,49 @@ public class Solution {
         ArrayList<Client> copyClient = new ArrayList<>(clients);
         HashMap<Integer, Integer> optimalPaths = Traversals.bfs(this.graph, this.clients);
         ArrayList<Client> sorted = new ArrayList<>();
-        sorted.sort(Comparator.comparingInt(c -> (int)c.alpha));
-        while (!copyClient.isEmpty()) {
-            double maxVal = -1;
-            Client maxClient = null;
-            for (Client client : copyClient) {
-                double currentVal = (client.payment * 1000) + ((100 - (int)client.alpha) * 1000000) + (optimalPaths.get(client.id));
-                if (maxVal == -1){
-                    maxClient = client;
-                    maxVal = currentVal;
-                }
-                else{
-                    if (maxVal < currentVal){
-                        maxClient = client;
-                        maxVal = currentVal;
-                    }
-                }
-            }
-            sorted.add(maxClient);
-            copyClient.remove(maxClient);
-        }
+        copyClient.sort(Comparator.comparingInt(client -> 100 - (int)client.alpha));
+//        while (!copyClient.isEmpty()) {
+//            double maxVal = -1;
+//            Client maxClient = null;
+//            for (Client client : copyClient) {
+//                double currentVal = (client.payment * 1000) + ((100 - (int)client.alpha) * 1000000) + (optimalPaths.get(client.id));
+//                if (maxVal == -1){
+//                    maxClient = client;
+//                    maxVal = currentVal;
+//                }
+//                else{
+//                    if (maxVal < currentVal){
+//                        maxClient = client;
+//                        maxVal = currentVal;
+//                    }
+//                }
+//            }
+//            sorted.add(maxClient);
+//            copyClient.remove(maxClient);
+//        }
         //----------------------------------------------
         //PERFORM A BFS FOR PATH TO EACH NODE, KEEP TRACK OF BANDWIDTH OF EACH NODE, CANNOT USE IF MAX B > USED B
-        return makePaths(sorted);
+        return makePaths(copyClient);
     }
 
     public HashMap<Integer, ArrayList<Integer>> makePaths(ArrayList<Client> sortedClients) {
         HashMap<Integer, ArrayList<Integer>> shortestPaths = new HashMap<>();
-        HashMap<Integer, ArrayList<Integer>> usages = new HashMap<>();
-
+        HashMap<Integer, HashMap<Integer, Integer>> usages = new HashMap<>(); //FIRST INDEX = TIME STEP, SECOND = INDEX TO USAGE
+        for (int i = 0; i < this.graph.size(); i++){
+            usages.put(i, new HashMap<>());
+        }
         for (Client client : sortedClients) {
-            ArrayList<Integer> path = onePath(client, usages);
+            ArrayList<Integer> path = onePath(client, usages); //PATH IS IDS IN ORDER OF TIME STEP
+
+            for (int i = 0; i < path.size(); i++) {
+                //getOrDefault Learned from JAVA
+                // https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/HashMap.html
+                HashMap<Integer, Integer> temp = usages.get(i);
+                temp.put(path.get(i), usages.get(i).getOrDefault(path.get(i), 0) + 1);
+                usages.replace(i, temp);
+            }
+
             shortestPaths.put(client.id, path);
-            usages.put(client.id, path);
             //System.out.println(sortedClients.size() - shortestPaths.size());
         }
         return shortestPaths;
@@ -96,39 +106,32 @@ public class Solution {
 
         @Override
         public int compareTo(PriorityItem o) {
-            if (this.priority > o.priority) {
-                return 1;
-            }
-            return 0;
+            return Integer.compare(this.priority, o.priority);
         }
 
     }
 
     //GIVEN: A CLIENT & PRIOR CLIENTS' USED NODES
     //RETURN: THE BFS FOR THIS CLIENT
-    public ArrayList<Integer> onePath(Client client, HashMap<Integer, ArrayList<Integer>> usages){
-        Queue<PriorityItem> searchQueue = new PriorityQueue<>();
+    public ArrayList<Integer> onePath(Client client, HashMap<Integer, HashMap<Integer, Integer>> usages){
+        Queue<PriorityItem> searchQueue = new LinkedList<>();
         HashMap<Integer, Integer> priors = new HashMap<>();
         searchQueue.add(new PriorityItem(graph.contentProvider, 0));
         priors.put(graph.contentProvider, -1);
         boolean found = false;
-        while (searchQueue.size() > 0 && !found) {
-            PriorityItem item = searchQueue.poll();
+        while (!searchQueue.isEmpty() && !found) {
+            PriorityItem item = searchQueue.remove();
             int node = item.id;
             for (int neighbor : this.graph.get(node)){
-                int nCount = 0;
-                for (ArrayList<Integer> list : usages.values()) {
-                    if (list.size() > item.priority && list.get(item.priority) == neighbor){
-                        nCount++;
-                    }
-                }
+                HashMap<Integer, Integer> interm = usages.getOrDefault(item.priority+1, new HashMap<>());
+                int nCount = interm.getOrDefault(neighbor, 0);
                 if (nCount < this.bandwidths.get(neighbor) && !priors.containsKey(neighbor)) {
                     priors.put(neighbor, node);
                     searchQueue.add(new PriorityItem(neighbor, item.priority+1));
-                }
-                if (neighbor == client.id){
-                    found = true;
-                    break;
+                    if (neighbor == client.id){
+                        found = true;
+                        break;
+                    }
                 }
             }
         }
@@ -136,6 +139,7 @@ public class Solution {
 
         //BACKPATH GENERATOR
         ArrayList<Integer> clientPath = new ArrayList<>();
+        System.out.println(usages);
         if (found) {
             int current = client.id;
             while (current != -1) {
