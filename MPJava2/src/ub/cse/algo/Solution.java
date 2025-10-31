@@ -40,7 +40,7 @@ public class Solution {
 
         //System.out.println(this.clients);
         sol.paths = optimalPaths(this.clients);
-        System.out.println(sol.paths);
+        //System.out.println(sol.paths);
         return sol;
     }
 
@@ -119,10 +119,10 @@ public class Solution {
                         if (!priors.containsKey(neighbor) && currBans.get(neighbor) < this.bandwidths.get(neighbor)) {
                             priors.put(neighbor, node);
                             searchQueue.add(neighbor);
-                        }
-                        if (neighbor == client.id) {
-                            found = true;
-                            break;
+                            if (neighbor == client.id) {
+                                found = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -130,11 +130,9 @@ public class Solution {
                 if (found) {
                     ArrayList<Integer> clientPath = new ArrayList<>();
                     Integer current = client.id;
-                    System.out.println(current);
-                    while (current.equals(null) && current != -1) {
+                    while (!current.equals(null) && current != -1) {
                         clientPath.add(0, current);
                         current = priors.get(current);
-                        System.out.println(current);
                     }
                     for (int c : clientPath) {
                         currBans.replace(c, currBans.get(c) + 1);
