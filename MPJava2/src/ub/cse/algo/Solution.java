@@ -48,11 +48,12 @@ public class Solution {
         ArrayList<Client> copyClient = new ArrayList<>(clients);
         HashMap<Integer, Integer> optimalPaths = Traversals.bfs(this.graph, this.clients);
         ArrayList<Client> sorted = new ArrayList<>();
+        sorted.sort(Comparator.comparingInt(c -> (int)c.alpha));
         while (!copyClient.isEmpty()) {
             double maxVal = -1;
             Client maxClient = null;
             for (Client client : copyClient) {
-                double currentVal = (client.payment*1000) + (client.alpha * 1000000) + optimalPaths.get(client.id);
+                double currentVal = (client.payment * 1000) + ((100 - (int)client.alpha) * 1000000) + (optimalPaths.get(client.id));
                 if (maxVal == -1){
                     maxClient = client;
                     maxVal = currentVal;
@@ -81,7 +82,7 @@ public class Solution {
             currBans.put(key, 0);
         }
         //REWORKED TRAVERSALS BFS FOR ONLY ONE CLIENT & ACCOUNTING FOR BANDWIDTHS
-        for (int i = 0; i < sortedClients.size(); i++) { //FOR EACH ALPHA VALUE//FOR EACH CLIENT, STARTING WITH HIGHEST PAYING
+        for (int i = 0; i < sortedClients.size(); i++) {
                 Client client = sortedClients.get(i);
 
                 Queue<Integer> searchQueue = new LinkedList<>();
@@ -107,9 +108,12 @@ public class Solution {
                 //BACKPATH GENERATOR
                 ArrayList<Integer> clientPath = new ArrayList<>();
                 if (found) {
+                    System.out.println(client.alpha);
+                    System.out.println(client.payment);
+                    System.out.println("-----------");
                     Integer current = client.id;
                     while (current != -1) {
-                        clientPath.add(0, current);
+                        clientPath.addFirst(current);
                         current = priors.get(current);
                     }
                     for (int c : clientPath) {
