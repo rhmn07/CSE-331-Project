@@ -40,15 +40,12 @@ public class Solution {
 
         //System.out.println(this.clients);
         sol.paths = optimalPaths(this.clients);
-
-
-        //System.out.println(sol.priorities);
-        //System.out.println(sol.bandwidths);
-        //System.out.println(sol.paths);
+        System.out.println(sol.paths);
         return sol;
     }
 
     public HashMap<Integer, ArrayList<Integer>> optimalPaths(ArrayList<Client> clients) {
+        //START OF MAHIR'S SECTION
         int maxAlpha = 0;
         for (Client client : clients) {
             if (!Float.isInfinite(client.alpha)) {
@@ -68,21 +65,19 @@ public class Solution {
             }
             alphaSort.get(i).add(client);
         }
-
-        System.out.println(maxAlpha);
-        System.out.println("");
+        // END OF SECTION
         for (int i = 0; i < alphaSort.size(); i++) {
-            alphaSort.set(i, sortClientsByAlpha(alphaSort.get(i)));
+            if (alphaSort.get(i).size() > 0) {
+                alphaSort.set(i, sortClientsByAlpha(alphaSort.get(i)));
+            }
         }
-
-
         //PERFORM A BFS FOR PATH TO EACH NODE, KEEP TRACK OF BANDWIDTH OF EACH NODE, CANNOT USE IF MAX B > USED B
 
         return makePaths(alphaSort);
     }
 
     public ArrayList<Client> sortClientsByAlpha(ArrayList<Client> clients) {
-        ArrayList<Client> sortedClients = new ArrayList<>(clients);
+        ArrayList<Client> sortedClients = new ArrayList<>();
         while (clients.size() > 1) {
             Client max = clients.getFirst();
             for (int i = 1; i < clients.size() - 1; i++) {
@@ -99,8 +94,9 @@ public class Solution {
     public HashMap<Integer, ArrayList<Integer>> makePaths(ArrayList<ArrayList<Client>> sortedClients) {
         HashMap<Integer, ArrayList<Integer>> pathList = new HashMap<>();
         HashMap<Integer, Integer> currBans = new HashMap<>();
-        for (int i = 0; i < this.graph.size(); i++) {
-            currBans.put(i, 0);
+        Set<Integer> keys = this.graph.keySet();
+        for (Integer key : keys) {
+            currBans.put(key, 0);
         }
 
         //System.out.println(currBans);
@@ -120,7 +116,7 @@ public class Solution {
                 while (!searchQueue.isEmpty() && !found) {
                     int node = searchQueue.poll();
                     for (int neighbor : graph.get(node)) {
-                        if (!priors.containsKey(neighbor) && currBans.get(neighbor) >= this.bandwidths.get(neighbor)) {
+                        if (!priors.containsKey(neighbor) && currBans.get(neighbor) < this.bandwidths.get(neighbor)) {
                             priors.put(neighbor, node);
                             searchQueue.add(neighbor);
                         }
@@ -133,17 +129,19 @@ public class Solution {
 
                 if (found) {
                     ArrayList<Integer> clientPath = new ArrayList<>();
-                    int current = client.id;
-                    while (current != -1) {
+                    Integer current = client.id;
+                    System.out.println(current);
+                    while (current.equals(null) && current != -1) {
                         clientPath.add(0, current);
                         current = priors.get(current);
+                        System.out.println(current);
                     }
                     for (int c : clientPath) {
                         currBans.replace(c, currBans.get(c) + 1);
                     }
                     pathList.put(client.id, clientPath);
+                    //OTHERWISE, WE DITCH THIS CLIENT
                 }
-                //OTHERWISE, WE DITCH THIS CLIENT
             }
         }
         return pathList;
