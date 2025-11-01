@@ -76,19 +76,20 @@ public class Solution {
     public HashMap<Integer, ArrayList<Integer>> makePaths(ArrayList<Client> sortedClients) {
         HashMap<Integer, ArrayList<Integer>> shortestPaths = new HashMap<>();
         HashMap<Integer, HashMap<Integer, Integer>> usages = new HashMap<>(); //FIRST INDEX = TIME STEP, SECOND = INDEX TO USAGE
-        for (int i = 0; i < this.graph.size(); i++){
-            usages.put(i, new HashMap<>());
-        }
+        int index = 0;
         for (Client client : sortedClients) {
             ArrayList<Integer> path = onePath(client, usages); //PATH IS IDS IN ORDER OF TIME STEP
 
             for (int i = 0; i < path.size(); i++) {
+                int j = index +i;
+                int node = path.get(i);
                 //getOrDefault Learned from JAVA
                 // https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/HashMap.html
-                HashMap<Integer, Integer> temp = usages.get(i);
-                temp.put(path.get(i), usages.get(i).getOrDefault(path.get(i), 0) + 1);
-                usages.replace(i, temp);
+                HashMap<Integer, Integer> temp = usages.getOrDefault(j, new HashMap<>());
+                temp.put(node,temp.getOrDefault(node,0)+1);
+                usages.put(j, temp);
             }
+            index+= path.size();
 
             shortestPaths.put(client.id, path);
             //System.out.println(sortedClients.size() - shortestPaths.size());
